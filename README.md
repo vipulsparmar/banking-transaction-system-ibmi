@@ -1,5 +1,7 @@
 # 🏦 Multi-Tiered Banking Transaction System (IBM i)
 
+![Architecture Diagram](architecture.png)
+
 A robust financial transaction processing engine developed on **IBM i (AS/400)**, featuring real-time account management, subfile-based interactive dashboards, and automated batch processing.
 
 ## 🚀 Key Features
@@ -26,6 +28,7 @@ A robust financial transaction processing engine developed on **IBM i (AS/400)**
 │   └── TXN_ENGINE.rpgle # Main transaction logic
 ├── QCLSRC/
 │   └── INIT_PGM.clle   # Environment setup and driver
+├── architecture.png    # High-level architecture diagram (Grayscale)
 └── README.md
 ```
 
