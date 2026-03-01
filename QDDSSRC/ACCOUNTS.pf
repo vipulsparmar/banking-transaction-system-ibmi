@@ -1,0 +1,8 @@
+      *-- ACCOUNTS Physical File
+     A                                      UNIQUE
+     A          R RACCT
+     A            ACCTID        10A         TEXT('Account ID')
+     A            CUSTNAME      30A         TEXT('Customer Name')
+     A            BALANCE       13P 2       TEXT('Balance')
+     A            STATUS         1A         TEXT('A=Active, I=Inactive')
+     A          K ACCTID

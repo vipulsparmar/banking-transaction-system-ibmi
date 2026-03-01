@@ -1,0 +1,32 @@
+      *-- Account Dashboard Display File
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      CA03(03 'Exit')
+     A                                      CA05(05 'Refresh')
+     A                                      CF12(12 'Cancel')
+
+      *-- Subfile Record
+     A          R SFLRCD                    SFL
+     A            SFL_OPT        1A  B  6  2VALUES('5' '2')
+     A            SFL_ACCT      10A  O  6  5
+     A            SFL_NAME      30A  O  6 17
+     A            SFL_BAL       12P 2O  6 50
+     A            SFL_STAT       1A  O  6 70
+
+      *-- Subfile Control Record
+     A          R SFLCTL                    SFLCTL(SFLRCD)
+     A                                      SFLPAG(10) SFLSIZ(10)
+     A                                      OVERLAY
+     A  31                                  SFLDSP
+     A  31                                  SFLDSPCTL
+     A  32                                  SFLCLR
+     A  33                                  SFLEND(*MORE)
+     A                                  1 30'ACCOUNT DASHBOARD'
+     A                                      COLOR(WHT)
+     A                                  3  2'Type options, press Enter:'
+     A                                  4  2'2=Update Account  5=View Transactions'
+     A                                      COLOR(BLU)
+     A                                  5  2'Opt  Account ID  Customer Name'
+     A                                  5 50'Balance      Status'
+     A                                      DSPATR(HI)
+     A                                 23  2'F3=Exit   F5=Refresh   F12=Cancel'
+     A                                      COLOR(BLU)

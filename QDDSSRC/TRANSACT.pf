@@ -1,0 +1,8 @@
+      *-- TRANSACT Physical File
+     A          R RTNX
+     A            TXNID         10A         TEXT('Transaction ID')
+     A            ACCTID        10A         TEXT('Account ID')
+     A            TXNTYPE        1A         TEXT('D=Deposit, W=Withdrawal')
+     A            AMOUNT        13P 2       TEXT('Amount')
+     A            TXNTIME         T         TEXT('Timestamp')
+     A          K TXNID

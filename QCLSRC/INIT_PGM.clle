@@ -1,0 +1,17 @@
+/*------------------------------------------------------------*/
+/* BANKING SYSTEM INITIAL SETUP AND DRIVER                    */
+/*------------------------------------------------------------*/
+             PGM
+
+             DCL        VAR(&USRLIB) TYPE(*CHAR) LEN(10) VALUE('BANKINGLIB')
+
+             /* SETUP LIBRARY LIST */
+             ADDLIBLE   LIB(&USRLIB)
+             MONMSG     MSGID(CPF2103) /* IGNORE IF ALREADY EXISTS */
+
+             /* CALL MAIN DASHBOARD */
+             CALL       PGM(ACCT_DASH)
+
+             RMVLIBLE   LIB(&USRLIB)
+
+             ENDPGM
