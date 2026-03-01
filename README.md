@@ -1,45 +1,67 @@
-# 🏦 Multi-Tiered Banking Transaction System (IBM i)
+# Multi-Tiered Banking Transaction System (IBM i)
 
 ![Architecture Diagram](architecture.png)
 
-A robust financial transaction processing engine developed on **IBM i (AS/400)**, featuring real-time account management, subfile-based interactive dashboards, and automated batch processing.
+## Project Overview
+This project is a robust financial transaction processing engine developed on the IBM i (AS/400) platform. It manages account-level financial operations including deposits and withdrawals while ensuring high data integrity and a responsive user interface via green-screen subfiles.
 
-## 🚀 Key Features
+## Thought Process and Design Choices
+The architecture of this system was designed to address three core challenges in enterprise financial systems: Data Integrity, Scalability, and User Efficiency.
 
-- **RPGLE Transaction Engine**: Processes Deposits and Withdrawals with strict **Record-Locking** to ensure data integrity during simultaneous updates.
-- **Subfile Dashboard**: An interactive, real-time dashboard built using **SDA** (Screen Design Aid) to query account balances and transaction history.
-- **CLLE Batch Control**: Automates library list management (`ADDLIBLE`) and environment setup for seamless module execution.
-- **DB2/400 Database**: Relational schema designed using **DDS** (Data Description Specifications) for optimized storage and fast retrieval.
+1. **Concurrency and Data Integrity (Record Locking)**: In a banking environment, multiple transactions might target the same account simultaneously. Using RPGLE's native record-level locking (via the `UPDATE` usage on the physical file), the system ensures that a record is locked the moment it is retrieved for a transaction until the update is committed. This prevents "lost updates" where one transaction overwrites another.
+2. **User Experience (Subfiles)**: To handle large volumes of data efficiently, the system uses Subfiles (SFL/SFLCTL) in the Display File. This allows the user to browse through thousands of accounts with minimal line traffic, which is a hallmark of efficient AS/400 application design.
+3. **Layered Architecture**: 
+   - **CLLE (Control Layer)**: Handles the environment setup, library lists, and error trapping at the job level.
+   - **DDS (Data Layer)**: Defines the physical structure and unique keys to enforce referential integrity at the database level.
+   - **RPGLE (Logic Layer)**: Separates business rules (like checking for sufficient funds) from the UI and database calls.
 
-## 🛠️ Tech Stack
+## How It Works
+- **Database Layer**: The `ACCOUNTS` file stores the master balance, while the `TRANSACT` file maintains a ledger. This dual-record approach is essential for auditing.
+- **Transaction Logic**: The RPGLE engine uses the `CHAIN` operation to fetch account data. If a withdrawal is requested, it subtracts from the balance only after verifying sufficient funds.
+- **Real-time Interface**: The dashboard uses an interactive subfile. Users can select accounts using option codes (like 2 for update) which triggers the underlying logic engine.
 
-- **Languages**: RPGLE (Free-form), CLLE (Control Language), DDS (Data Description).
-- **Tools**: SEU/RDP/VS Code, SDA (Screen Design Aid), IBM i Operating System.
-- **Database**: DB2 for i (Physical Files).
+## Deployment Instructions on IBM i (AS/400)
 
-## 📁 Repository Structure
+Follow these steps to deploy and run the system on your AS/400 machine:
 
-```text
-├── QDDSSRC/
-│   ├── ACCOUNTS.pf    # Account Master physical file
-│   ├── TRANSACT.pf    # Transaction History physical file
-│   └── ACCT_DSPF.dspf # Subfile display file
-├── QRPGLESRC/
-│   └── TXN_ENGINE.rpgle # Main transaction logic
-├── QCLSRC/
-│   └── INIT_PGM.clle   # Environment setup and driver
-├── architecture.png    # High-level architecture diagram (Grayscale)
-└── README.md
+### 1. Environment Setup
+Create a library and the necessary source physical files to hold the code:
+```sql
+CRTLIB LIB(BANKINGLIB)
+CRTSRCPF FILE(BANKINGLIB/QDDSSRC) RCDLEN(112)
+CRTSRCPF FILE(BANKINGLIB/QRPGLESRC) RCDLEN(112)
+CRTSRCPF FILE(BANKINGLIB/QCLSRC) RCDLEN(112)
 ```
 
-## 🏗️ How to Deploy
+### 2. Upload and Copy Source
+Upload the files from this repository into the respective members in your new source files. Use FTP, Access Client Solutions (ACS), or VS Code with the IBM i extensions.
 
-1. **Create Source Files**: If not already present, create `QDDSSRC`, `QRPGLESRC`, and `QCLSRC` in your development library.
-2. **Compile DB**: Run `CRTPF` on the physical file members in `QDDSSRC`.
-3. **Compile Display**: Run `CRTDSPF` on `ACCT_DSPF`.
-4. **Compile Logic**: Run `CRTBNDRPG` on `TXN_ENGINE`.
-5. **Compile Driver**: Run `CRTBNDCL` on `INIT_PGM`.
-6. **Execute**: `CALL PGM(INIT_PGM)` to launch the dashboard.
+### 3. Compilation Order
+The objects must be compiled in the following order to resolve dependencies:
+
+1. **Physical Files (Database)**:
+   ```sql
+   CRTPF FILE(BANKINGLIB/ACCOUNTS) SRCFILE(BANKINGLIB/QDDSSRC)
+   CRTPF FILE(BANKINGLIB/TRANSACT) SRCFILE(BANKINGLIB/QDDSSRC)
+   ```
+2. **Display File (UI)**:
+   ```sql
+   CRTDSPF FILE(BANKINGLIB/ACCT_DSPF) SRCFILE(BANKINGLIB/QDDSSRC)
+   ```
+3. **RPGLE Program (Logic)**:
+   ```sql
+   CRTBNDRPG PGM(BANKINGLIB/TXN_ENGINE) SRCFILE(BANKINGLIB/QRPGLESRC)
+   ```
+4. **CLLE Program (Driver)**:
+   ```sql
+   CRTBNDCL PGM(BANKINGLIB/INIT_PGM) SRCFILE(BANKINGLIB/QCLSRC)
+   ```
+
+### 4. Running the Application
+Call the initial program to set up your library list and start the dashboard:
+```sql
+CALL PGM(BANKINGLIB/INIT_PGM)
+```
 
 ---
-*Developed as part of my IBM i & Data Projects Portfolio.*
+*Developed as part of the IBM i & Data Projects Portfolio.*
